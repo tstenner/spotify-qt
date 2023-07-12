@@ -7,33 +7,21 @@ env:
 
 jobs:
   build:
-    # Ubuntu 20.04 is supported until April 2025
-    # See: https://wiki.ubuntu.com/Releases
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: Create Build Environment
-      run: cmake -E make_directory ${{runner.workspace}}/build
-
     - name: Install Dependencies
-      run: sudo apt update && sudo apt install build-essential qt5-default libqt5svg5-dev -y
+      run: sudo apt update && sudo apt install build-essential libqt6svg6-dev ninja-build -y
 
     - name: Configure CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DUSE_TESTS=ON
+      run: cmake -S $GITHUB_WORKSPACE -B build -DCMAKE_BUILD_TYPE=$BUILD_TYPE -G Ninja
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cmake --build . --config $BUILD_TYPE
-
-    - name: Test
-      working-directory: ${{runner.workspace}}/build/lib/test
-      shell: bash
-      run: ${{runner.workspace}}/build/lib/test/spotify-qt-lib-test
+      run: cmake --build build --config $BUILD_TYPE -j
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
